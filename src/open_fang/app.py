@@ -8,6 +8,7 @@ from typing import Literal
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from harness_core.models import AnthropicLLM, get_default_llm
 from pydantic import BaseModel, Field
 
 from .kb.graph import build_subgraph
@@ -17,8 +18,12 @@ from .models import Brief, Report
 from .permissions.bridge import PermissionBridge
 from .permissions.tokens import TokenRegistry
 from .pipeline import OpenFangPipeline
+from .planner.llm_planner import DAGPlanner
 from .scheduler.engine import SchedulerEngine
+from .sources.arxiv import ArxivSource
+from .sources.mock import MockSource
 from .supervisor.registry import Supervisor, default_supervisor
+from .verify.claim_verifier import ClaimVerifier
 
 app = FastAPI(
     title="OpenFang",
@@ -32,9 +37,40 @@ _tokens = TokenRegistry()
 _bridge = PermissionBridge(tokens=_tokens)
 _kb: KBStore | None = None
 _supervisor: Supervisor = default_supervisor()
-_pipeline = OpenFangPipeline(
-    scheduler=SchedulerEngine(permission_bridge=_bridge, supervisor=_supervisor)
-)
+
+
+def _build_default_pipeline() -> tuple[OpenFangPipeline, dict[str, object]]:
+    """Build the default HTTP pipeline.
+
+    Live mode (real arxiv source + AnthropicLLM-backed planner/verifier) is
+    activated when ``ANTHROPIC_API_KEY`` is set and the ``anthropic`` package
+    is importable. Otherwise falls back to MockSource + MockLLM so that
+    container/test environments still boot.
+    """
+    llm = get_default_llm()
+    live = isinstance(llm, AnthropicLLM)
+    if live:
+        source = ArxivSource(email=os.environ.get("ARXIV_EMAIL", "").strip())
+    else:
+        source = MockSource()
+    pipeline = OpenFangPipeline(
+        planner=DAGPlanner(llm=llm if live else None),
+        scheduler=SchedulerEngine(
+            source=source,
+            permission_bridge=_bridge,
+            supervisor=_supervisor,
+        ),
+        verifier=ClaimVerifier(llm=llm if live else None),
+    )
+    info = {
+        "mode": "live" if live else "mock",
+        "llm": type(llm).__name__,
+        "source": type(source).__name__,
+    }
+    return pipeline, info
+
+
+_pipeline, _runtime_info = _build_default_pipeline()
 
 
 def _get_kb() -> KBStore | None:
@@ -68,6 +104,13 @@ class ApproveResponse(BaseModel):
 @app.get("/healthz")
 def healthz() -> dict[str, str]:
     return {"status": "ok", "service": "open-fang"}
+
+
+@app.get("/v1/info")
+def runtime_info() -> dict[str, object]:
+    """Report active pipeline mode and components — useful for debugging
+    whether the server is in live (real arxiv + LLM) or mock mode."""
+    return _runtime_info
 
 
 @app.post("/v1/research", response_model=Report)
