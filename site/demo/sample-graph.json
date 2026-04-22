@@ -1,0 +1,108 @@
+{
+  "seed_id": "arxiv:2305.18323",
+  "nodes": [
+    { "data": { "id": "arxiv:2305.18323", "label": "ReWOO\n(Xu et al., 2023)" } },
+    { "data": { "id": "arxiv:2210.03629", "label": "ReAct\n(Yao et al., 2022)" } },
+    { "data": { "id": "arxiv:2302.04761", "label": "Toolformer\n(Schick et al., 2023)" } },
+    { "data": { "id": "arxiv:2303.11366", "label": "Reflexion\n(Shinn et al., 2023)" } },
+    { "data": { "id": "arxiv:2201.11903", "label": "Chain-of-Thought\n(Wei et al., 2022)" } },
+    { "data": { "id": "arxiv:2203.11171", "label": "Self-Consistency\n(Wang et al., 2022)" } },
+    { "data": { "id": "arxiv:2305.10601", "label": "Tree-of-Thoughts\n(Yao et al., 2023)" } },
+    { "data": { "id": "arxiv:2308.00352", "label": "MetaGPT\n(Hong et al., 2023)" } },
+    { "data": { "id": "arxiv:2307.16789", "label": "AutoGen\n(Wu et al., 2023)" } },
+    { "data": { "id": "arxiv:2204.02311", "label": "PaLM\n(Chowdhery et al., 2022)" } },
+    { "data": { "id": "arxiv:2107.03374", "label": "HumanEval / Codex\n(Chen et al., 2021)" } },
+    { "data": { "id": "arxiv:2310.06770", "label": "SWE-bench\n(Jimenez et al., 2023)" } }
+  ],
+  "edges": [
+    { "data": { "id": "e1", "source": "arxiv:2305.18323", "target": "arxiv:2210.03629", "kind": "extends", "weight": 0.9 } },
+    { "data": { "id": "e2", "source": "arxiv:2305.18323", "target": "arxiv:2302.04761", "kind": "cites", "weight": 0.7 } },
+    { "data": { "id": "e3", "source": "arxiv:2210.03629", "target": "arxiv:2201.11903", "kind": "extends", "weight": 0.85 } },
+    { "data": { "id": "e4", "source": "arxiv:2303.11366", "target": "arxiv:2210.03629", "kind": "extends", "weight": 0.8 } },
+    { "data": { "id": "e5", "source": "arxiv:2203.11171", "target": "arxiv:2201.11903", "kind": "extends", "weight": 0.75 } },
+    { "data": { "id": "e6", "source": "arxiv:2305.10601", "target": "arxiv:2201.11903", "kind": "extends", "weight": 0.7 } },
+    { "data": { "id": "e7", "source": "arxiv:2305.10601", "target": "arxiv:2203.11171", "kind": "cites", "weight": 0.6 } },
+    { "data": { "id": "e8", "source": "arxiv:2308.00352", "target": "arxiv:2307.16789", "kind": "shares-author", "weight": 0.4 } },
+    { "data": { "id": "e9", "source": "arxiv:2308.00352", "target": "arxiv:2305.18323", "kind": "cites", "weight": 0.5 } },
+    { "data": { "id": "e10", "source": "arxiv:2307.16789", "target": "arxiv:2303.11366", "kind": "cites", "weight": 0.55 } },
+    { "data": { "id": "e11", "source": "arxiv:2302.04761", "target": "arxiv:2204.02311", "kind": "cites", "weight": 0.5 } },
+    { "data": { "id": "e12", "source": "arxiv:2210.03629", "target": "arxiv:2204.02311", "kind": "cites", "weight": 0.45 } },
+    { "data": { "id": "e13", "source": "arxiv:2310.06770", "target": "arxiv:2107.03374", "kind": "same-benchmark", "weight": 0.35 } },
+    { "data": { "id": "e14", "source": "arxiv:2310.06770", "target": "arxiv:2305.18323", "kind": "cites", "weight": 0.5 } },
+    { "data": { "id": "e15", "source": "arxiv:2303.11366", "target": "arxiv:2305.18323", "kind": "refutes", "weight": 0.3 } }
+  ],
+  "papers": {
+    "arxiv:2305.18323": {
+      "title": "ReWOO: Decoupling Reasoning from Observations for Efficient Augmented Language Models",
+      "authors": ["Binfeng Xu", "Zhiyuan Peng", "Bowen Lei", "et al."],
+      "published_at": "2023-05-23",
+      "abstract": "ReWOO decouples the planning phase from execution so that tool-augmented LLMs can compute a full reasoning plan before issuing any tool calls. This reduces token cost by ~5× on HotpotQA and TriviaQA while matching ReAct accuracy."
+    },
+    "arxiv:2210.03629": {
+      "title": "ReAct: Synergizing Reasoning and Acting in Language Models",
+      "authors": ["Shunyu Yao", "Jeffrey Zhao", "Dian Yu", "et al."],
+      "published_at": "2022-10-06",
+      "abstract": "ReAct interleaves chain-of-thought reasoning steps with tool-use actions, producing a loop that lets the LM ground reasoning in external observations. Improves factuality on HotpotQA and interactive decision-making on ALFWorld/WebShop."
+    },
+    "arxiv:2302.04761": {
+      "title": "Toolformer: Language Models Can Teach Themselves to Use Tools",
+      "authors": ["Timo Schick", "Jane Dwivedi-Yu", "Roberto Dessì", "et al."],
+      "published_at": "2023-02-09",
+      "abstract": "Self-supervised fine-tuning pipeline where the model learns to decide which APIs to call, when to call them, what arguments to pass, and how to incorporate the results. Covers calculator, QA, translation, Wikipedia search."
+    },
+    "arxiv:2303.11366": {
+      "title": "Reflexion: Language Agents with Verbal Reinforcement Learning",
+      "authors": ["Noah Shinn", "Federico Cassano", "Ashwin Gopinath", "et al."],
+      "published_at": "2023-03-20",
+      "abstract": "Agents reflect on task feedback in natural language and store the critique as episodic memory. Yields large gains on HumanEval, AlfWorld, and HotpotQA — especially when the base model is weak."
+    },
+    "arxiv:2201.11903": {
+      "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+      "authors": ["Jason Wei", "Xuezhi Wang", "Dale Schuurmans", "et al."],
+      "published_at": "2022-01-28",
+      "abstract": "Few-shot exemplars that show step-by-step reasoning unlock strong math, commonsense, and symbolic-reasoning performance in models of sufficient scale (~100B)."
+    },
+    "arxiv:2203.11171": {
+      "title": "Self-Consistency Improves Chain-of-Thought Reasoning in Language Models",
+      "authors": ["Xuezhi Wang", "Jason Wei", "Dale Schuurmans", "et al."],
+      "published_at": "2022-03-21",
+      "abstract": "Sample multiple reasoning paths and take the majority-vote answer. Substantially improves CoT accuracy on GSM8K, SVAMP, AQuA, and more, with no extra training."
+    },
+    "arxiv:2305.10601": {
+      "title": "Tree of Thoughts: Deliberate Problem Solving with Large Language Models",
+      "authors": ["Shunyu Yao", "Dian Yu", "Jeffrey Zhao", "et al."],
+      "published_at": "2023-05-17",
+      "abstract": "Generalizes chain-of-thought into a tree search — the model proposes multiple thought branches, evaluates them, and backtracks. Strong on Game of 24, creative writing, and mini-crosswords."
+    },
+    "arxiv:2308.00352": {
+      "title": "MetaGPT: Meta Programming for A Multi-Agent Collaborative Framework",
+      "authors": ["Sirui Hong", "Xiawu Zheng", "Jonathan Chen", "et al."],
+      "published_at": "2023-08-01",
+      "abstract": "Encodes Standard Operating Procedures into multi-agent LLM pipelines (PM, architect, engineer, QA). Reduces hallucination cascades and hits high pass rates on HumanEval and MBPP."
+    },
+    "arxiv:2307.16789": {
+      "title": "AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversation",
+      "authors": ["Qingyun Wu", "Gagan Bansal", "Jieyu Zhang", "et al."],
+      "published_at": "2023-10-03",
+      "abstract": "Framework for building applications as conversations between customizable agents that can combine LLMs, humans, and tools. Demonstrated across code generation, math, and decision-making tasks."
+    },
+    "arxiv:2204.02311": {
+      "title": "PaLM: Scaling Language Modeling with Pathways",
+      "authors": ["Aakanksha Chowdhery", "Sharan Narang", "Jacob Devlin", "et al."],
+      "published_at": "2022-04-05",
+      "abstract": "540B-parameter dense decoder trained on 6144 TPU v4 chips. Establishes strong few-shot baselines on BIG-bench, GSM8K, HumanEval, and open-domain QA — a common backbone for agent-paper evaluation."
+    },
+    "arxiv:2107.03374": {
+      "title": "Evaluating Large Language Models Trained on Code",
+      "authors": ["Mark Chen", "Jerry Tworek", "Heewoo Jun", "et al."],
+      "published_at": "2021-07-07",
+      "abstract": "Introduces Codex and the HumanEval benchmark — 164 hand-written programming problems that measure functional correctness via unit tests. Still the reference bar for code-generation agents."
+    },
+    "arxiv:2310.06770": {
+      "title": "SWE-bench: Can Language Models Resolve Real-World GitHub Issues?",
+      "authors": ["Carlos E. Jimenez", "John Yang", "Alexander Wettig", "et al."],
+      "published_at": "2023-10-10",
+      "abstract": "2,294 real GitHub issues paired with the PR that fixed them. Evaluates end-to-end code-agent performance on repository-scale edits with full test execution. The de-facto harness-engineering benchmark."
+    }
+  }
+}

@@ -1,0 +1,24 @@
+services:
+  open-fang:
+    build:
+      context: .
+      dockerfile: Containerfile
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - HARNESS_LLM_MODEL=${HARNESS_LLM_MODEL:-claude-3-5-sonnet-latest}
+      - ARXIV_EMAIL=${ARXIV_EMAIL:-}
+      - S2_API_KEY=${S2_API_KEY:-}
+      - OPEN_FANG_DB_PATH=/data/open_fang.db
+      - OPEN_FANG_MAX_COST_USD=${OPEN_FANG_MAX_COST_USD:-0.50}
+    ports:
+      - "${OPEN_FANG_PORT:-8010}:8010"
+    volumes:
+      - open-fang-kb:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8010/healthz', timeout=2)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  open-fang-kb:

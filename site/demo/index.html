@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>OpenFang — citation graph demo</title>
+<script src="https://unpkg.com/cytoscape@3.29.0/dist/cytoscape.min.js"></script>
+<style>
+  :root { color-scheme: dark; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+  body { margin: 0; background: #0f1115; color: #e6e6e6; }
+  header { padding: 10px 14px; border-bottom: 1px solid #242833; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  header .title { font-weight: 600; }
+  header .title::before { content: "🦷"; margin-right: 6px; }
+  header select, header button { background: #1a1e26; color: #e6e6e6; border: 1px solid #2d333f; padding: 6px 10px; border-radius: 4px; font: inherit; }
+  header button { background: #2b6bed; border-color: #2b6bed; color: white; cursor: pointer; }
+  header button:hover { background: #3c7bf5; }
+  header .meta { margin-left: auto; opacity: 0.7; font-size: 13px; }
+  #cy { width: 100vw; height: calc(100vh - 52px); }
+  #panel {
+    position: absolute; right: 14px; top: 66px; width: 340px;
+    max-height: calc(100vh - 86px); overflow: auto;
+    background: #1a1e26; border: 1px solid #2d333f; border-radius: 8px;
+    padding: 14px; font-size: 13.5px; display: none;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  }
+  #panel h3 { margin: 0 0 8px; font-size: 14.5px; }
+  #panel .authors { opacity: 0.75; font-size: 12.5px; margin-bottom: 2px; }
+  #panel .date { opacity: 0.55; font-size: 12px; margin-bottom: 8px; }
+  #panel .abstract { white-space: pre-wrap; line-height: 1.5; }
+  #panel a.close { float: right; color: #a3abbd; text-decoration: none; }
+  .legend { display: inline-flex; gap: 12px; font-size: 12px; align-items: center; flex-wrap: wrap; }
+  .legend span { display: inline-flex; gap: 5px; align-items: center; color: #a3abbd; }
+  .legend i { width: 18px; height: 3px; display: inline-block; border-radius: 2px; }
+  .banner {
+    position: absolute; left: 14px; bottom: 14px;
+    background: rgba(23,27,36,0.92); border: 1px solid #2d333f;
+    padding: 8px 12px; border-radius: 8px; font-size: 12.5px; color: #a3abbd;
+  }
+  .banner strong { color: #e6e6e6; }
+</style>
+</head>
+<body>
+<header>
+  <span class="title">OpenFang · citation graph</span>
+  <span style="opacity:0.6;">|</span>
+  <label>Seed <select id="seed">
+    <option value="arxiv:2305.18323">ReWOO</option>
+    <option value="arxiv:2210.03629">ReAct</option>
+    <option value="arxiv:2303.11366">Reflexion</option>
+    <option value="arxiv:2201.11903">Chain-of-Thought</option>
+    <option value="arxiv:2310.06770">SWE-bench</option>
+    <option value="">(all)</option>
+  </select></label>
+  <label>Depth <select id="depth">
+    <option>1</option><option selected>2</option><option>3</option>
+  </select></label>
+  <button id="go">Redraw</button>
+  <div class="legend">
+    <span><i style="background:#2b6bed"></i>cites</span>
+    <span><i style="background:#e6a23c"></i>extends</span>
+    <span><i style="background:#e63946"></i>refutes</span>
+    <span><i style="background:#8e8e93"></i>other</span>
+  </div>
+  <div class="meta" id="meta"></div>
+</header>
+<div id="cy"></div>
+<div id="panel"></div>
+<div class="banner">
+  <strong>Demo mode</strong> — pre-baked sample subgraph. Point the
+  real viewer at a running OpenFang instance for live traversal of your KB.
+</div>
+<script>
+const $ = (id) => document.getElementById(id);
+const edgeColor = (kind) => ({
+  cites: "#2b6bed",
+  extends: "#e6a23c",
+  refutes: "#e63946",
+  "shares-author": "#8e8e93",
+  "same-benchmark": "#8e8e93",
+  "same-technique-family": "#8e8e93",
+}[kind] || "#8e8e93");
+
+const cy = cytoscape({
+  container: $("cy"),
+  style: [
+    { selector: "node", style: {
+      "background-color": "#1a1e26",
+      "border-color": "#2b6bed",
+      "border-width": 2,
+      "color": "#e6e6e6",
+      "label": "data(label)",
+      "font-size": 11,
+      "text-wrap": "wrap",
+      "text-max-width": 160,
+      "text-valign": "bottom",
+      "text-margin-y": 6,
+      "width": 24, "height": 24,
+    }},
+    { selector: "node:selected", style: { "border-color": "#ffd166", "border-width": 3, "background-color": "#2a2f3b" } },
+    { selector: "edge", style: {
+      "line-color": (e) => edgeColor(e.data("kind")),
+      "target-arrow-color": (e) => edgeColor(e.data("kind")),
+      "target-arrow-shape": "triangle",
+      "curve-style": "bezier",
+      "width": (e) => 1 + (e.data("weight") || 0.4) * 2.5,
+      "arrow-scale": 0.9,
+      "opacity": 0.85,
+    }},
+  ],
+  layout: { name: "cose", animate: false, padding: 30 },
+});
+
+let graphData = null;
+
+function bfs(nodes, edges, seed, depth) {
+  if (!seed) return { nodes, edges };
+  const adj = new Map();
+  for (const e of edges) {
+    const s = e.data.source, t = e.data.target;
+    if (!adj.has(s)) adj.set(s, []);
+    if (!adj.has(t)) adj.set(t, []);
+    adj.get(s).push(t);
+    adj.get(t).push(s);
+  }
+  const keep = new Set([seed]);
+  let frontier = [seed];
+  for (let d = 0; d < depth; d++) {
+    const next = [];
+    for (const n of frontier) {
+      for (const m of (adj.get(n) || [])) {
+        if (!keep.has(m)) { keep.add(m); next.push(m); }
+      }
+    }
+    frontier = next;
+  }
+  return {
+    nodes: nodes.filter((n) => keep.has(n.data.id)),
+    edges: edges.filter((e) => keep.has(e.data.source) && keep.has(e.data.target)),
+  };
+}
+
+function render() {
+  if (!graphData) return;
+  const seed = $("seed").value;
+  const depth = parseInt($("depth").value, 10);
+  const sub = bfs(graphData.nodes, graphData.edges, seed, depth);
+  cy.elements().remove();
+  cy.add(sub.nodes);
+  cy.add(sub.edges);
+  cy.layout({ name: "cose", animate: false, padding: 30, idealEdgeLength: 120 }).run();
+  $("meta").textContent = `${sub.nodes.length} nodes / ${sub.edges.length} edges — seed ${seed || "(all)"}`;
+  $("panel").style.display = "none";
+}
+
+async function boot() {
+  try {
+    const resp = await fetch("./sample-graph.json");
+    if (!resp.ok) throw new Error(`sample-graph.json ${resp.status}`);
+    graphData = await resp.json();
+    render();
+  } catch (err) {
+    $("meta").textContent = `error: ${err.message}`;
+  }
+}
+
+$("go").addEventListener("click", render);
+$("seed").addEventListener("change", render);
+$("depth").addEventListener("change", render);
+
+cy.on("tap", "node", (ev) => {
+  if (!graphData) return;
+  const id = ev.target.id();
+  const p = graphData.papers[id];
+  if (!p) { $("panel").style.display = "none"; return; }
+  const authors = (p.authors || []).join(", ") || "<em>no authors</em>";
+  $("panel").innerHTML = `
+    <a class="close" href="#" onclick="document.getElementById('panel').style.display='none';return false;">×</a>
+    <h3>${p.title || id}</h3>
+    <div class="authors">${authors}</div>
+    <div class="date">${p.published_at || ""} · <code>${id}</code></div>
+    <div class="abstract">${p.abstract || ""}</div>
+  `;
+  $("panel").style.display = "block";
+});
+
+cy.on("tap", (ev) => { if (ev.target === cy) $("panel").style.display = "none"; });
+
+boot();
+</script>
+</body>
+</html>
