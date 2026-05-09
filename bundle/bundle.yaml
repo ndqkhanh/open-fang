@@ -1,0 +1,26 @@
+apiVersion: lyra.dev/v3
+kind: SourceBundle
+name: open-fang
+version: 0.8.0
+description: Autonomous AI research agent — paper ingest, 5-tier verifier, 9-specialist cohort, weekly feed cron.
+dual_use: false
+smoke_eval_threshold: 0.95
+persona: persona.md
+skills: skills/
+tools:
+  - kind: native
+    name: openfang_paper_ingest
+  - kind: native
+    name: openfang_verifier_5tier
+  - kind: mcp
+    name: openfang_store
+    server: stdio:./tools/mcp_server.py
+memory:
+  seed: memory/seed.md
+evals:
+  golden: evals/golden.jsonl
+  rubric: evals/rubric.md
+verifier:
+  domain: research
+  command: python verifier/checker.py
+  budget_seconds: 600

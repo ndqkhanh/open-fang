@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>OpenFang — citation graph</title>
+<script src="https://unpkg.com/cytoscape@3.29.0/dist/cytoscape.min.js"></script>
+<style>
+  :root { color-scheme: dark; font-family: system-ui, sans-serif; }
+  body { margin: 0; background: #0f1115; color: #e6e6e6; }
+  header { padding: 10px 14px; border-bottom: 1px solid #242833; display: flex; gap: 10px; align-items: center; }
+  header input, header select { background: #1a1e26; color: #e6e6e6; border: 1px solid #2d333f; padding: 6px 8px; border-radius: 4px; }
+  header button { background: #2b6bed; color: white; border: 0; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+  header button:hover { background: #3c7bf5; }
+  header .meta { margin-left: auto; opacity: 0.7; font-size: 13px; }
+  #cy { width: 100vw; height: calc(100vh - 50px); }
+  #panel { position: absolute; right: 14px; top: 60px; width: 340px; max-height: calc(100vh - 80px); overflow: auto; background: #1a1e26; border: 1px solid #2d333f; border-radius: 6px; padding: 12px; font-size: 13px; display: none; }
+  #panel h3 { margin: 0 0 6px; font-size: 14px; }
+  #panel .authors { opacity: 0.7; }
+  .legend { display: inline-flex; gap: 10px; font-size: 12px; margin-left: 16px; align-items: center; }
+  .legend span { display: inline-flex; gap: 4px; align-items: center; }
+  .legend i { width: 16px; height: 3px; display: inline-block; border-radius: 2px; }
+</style>
+</head>
+<body>
+<header>
+  <label>Seed <input id="seed" placeholder="arxiv:2305.18323" /></label>
+  <label>or query <input id="query" placeholder="rewoo" /></label>
+  <label>Depth
+    <select id="depth"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option></select>
+  </label>
+  <button id="go">Load</button>
+  <div class="legend">
+    <span><i style="background:#2b6bed"></i>cites</span>
+    <span><i style="background:#e6a23c"></i>extends</span>
+    <span><i style="background:#e63946"></i>refutes</span>
+    <span><i style="background:#8e8e93"></i>other</span>
+  </div>
+  <div class="meta" id="meta"></div>
+</header>
+<div id="cy"></div>
+<div id="panel"></div>
+<script src="./app.js"></script>
+</body>
+</html>
